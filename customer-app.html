@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>The Daily Grind – Loyalty Card</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5EFE0;
+    --dark: #1A1008;
+    --brown: #5C3317;
+    --gold: #C9973A;
+    --gold-light: #E8C068;
+    --warm-mid: #8B5E3C;
+    --stamp-fill: #5C3317;
+    --stamp-empty: #E8DCC8;
+    --radius: 18px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    min-height: 100%;
+    background: var(--dark);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--dark);
+    overscroll-behavior: none;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at 30% 0%, #3a1f08 0%, #1A1008 60%);
+  }
+
+  /* ── SCREENS ── */
+  .screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    padding: 0 0 40px;
+    animation: fadeUp .35s ease both;
+  }
+  .screen.active { display: flex; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── CONTENT LIMITER — centres content with fluid max-width ── */
+  .content-wrap {
+    width: 100%;
+    max-width: 560px;
+    padding: 0 20px;
+    box-sizing: border-box;
+  }
+  /* On tablets and up, cards fill more width but stay comfortable */
+  @media (min-width: 600px) {
+    .content-wrap { max-width: 680px; padding: 0 32px; }
+  }
+  @media (min-width: 900px) {
+    .content-wrap { max-width: 860px; padding: 0 48px; }
+  }
+  @media (min-width: 1200px) {
+    .content-wrap { max-width: 1000px; padding: 0 60px; }
+  }
+
+  /* ── HEADER ── */
+  .brand-header {
+    width: 100%;
+    padding: 48px 28px 28px;
+    text-align: center;
+  }
+  .brand-logo {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .brand-icon {
+    font-size: 38px;
+    line-height: 1;
+    filter: drop-shadow(0 2px 8px rgba(201,151,58,0.4));
+  }
+  .brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+  .brand-sub {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gold-light);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-top: 2px;
+  }
+  .brand-tag {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 8px;
+    letter-spacing: 0.05em;
+  }
+  @media (min-width: 600px) {
+    .brand-icon { font-size: 48px; }
+    .brand-name { font-size: 36px; }
+    .brand-sub  { font-size: 13px; }
+    .brand-header { padding: 56px 40px 32px; }
+  }
+  @media (min-width: 900px) {
+    .brand-name { font-size: 42px; }
+  }
+
+  /* ── CARD SHELL ── */
+  .card {
+    background: var(--cream);
+    border-radius: var(--radius);
+    margin: 0 auto;
+    width: 100%;
+    padding: 28px 24px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(201,151,58,0.15);
+  }
+  /* On wide screens, sign-up/sign-in cards stay centred and don't go wall-to-wall */
+  @media (min-width: 600px) {
+    .card { padding: 36px 32px; border-radius: 22px; }
+  }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--brown);
+    margin-bottom: 6px;
+  }
+  .card-sub {
+    font-size: 13px;
+    color: var(--warm-mid);
+    margin-bottom: 22px;
+    line-height: 1.5;
+  }
+  @media (min-width: 600px) {
+    .card-title { font-size: 26px; }
+    .card-sub   { font-size: 15px; }
+  }
+
+  /* ── FORM ELEMENTS ── */
+  .form-group { margin-bottom: 16px; }
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--brown);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  input[type="text"], input[type="email"] {
+    width: 100%;
+    padding: 13px 16px;
+    border: 2px solid #DDD0BB;
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    background: #FFFDF7;
+    color: var(--dark);
+    outline: none;
+    transition: border-color .2s;
+  }
+  input:focus { border-color: var(--gold); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all .2s;
+    letter-spacing: 0.03em;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--brown), var(--gold));
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(92,51,23,0.35);
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(92,51,23,0.45); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--brown);
+    border: 2px solid #DDD0BB;
+    margin-top: 10px;
+  }
+  .btn-secondary:hover { background: #F0E8D8; }
+  .btn-link {
+    background: none;
+    border: none;
+    color: var(--gold);
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    padding: 0;
+    text-decoration: underline;
+  }
+
+  .divider {
+    text-align: center;
+    font-size: 12px;
+    color: #B0A090;
+    margin: 14px 0;
+    position: relative;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 38%;
+    height: 1px;
+    background: #DDD0BB;
+  }
+  .divider::before { left: 0; }
+  .divider::after { right: 0; }
+
+  /* ── STAMP GRID ── */
+  .loyalty-card-inner {
+    background: var(--cream);
+    border-radius: var(--radius);
+    margin: 0 auto;
+    width: 100%;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(201,151,58,0.15);
+    overflow: hidden;
+  }
+  .loyalty-top {
+    background: linear-gradient(135deg, var(--brown) 0%, #3D1F0A 100%);
+    padding: 22px 24px 18px;
+    color: #fff;
+  }
+  .loyalty-greeting {
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+  .loyalty-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gold-light);
+    margin-top: 2px;
+  }
+  .loyalty-count-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .loyalty-count-big {
+    font-family: 'Playfair Display', serif;
+    font-size: 40px;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .loyalty-count-label {
+    font-size: 13px;
+    opacity: 0.65;
+  }
+  .loyalty-progress-bar {
+    margin-top: 10px;
+    height: 5px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .loyalty-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 99px;
+    transition: width .6s cubic-bezier(.4,0,.2,1);
+  }
+  @media (min-width: 600px) {
+    .loyalty-top { padding: 30px 32px 24px; }
+    .loyalty-name { font-size: 32px; }
+    .loyalty-count-big { font-size: 52px; }
+    .loyalty-count-label { font-size: 16px; }
+    .loyalty-greeting { font-size: 13px; }
+  }
+  @media (min-width: 900px) {
+    .loyalty-name { font-size: 40px; }
+    .loyalty-count-big { font-size: 64px; }
+  }
+
+  /* On tablets+ the loyalty card top area sits beside the stamp grid */
+  @media (min-width: 700px) {
+    .loyalty-card-inner {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+    }
+    .loyalty-top {
+      flex: 0 0 45%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-radius: 0;
+    }
+    .loyalty-top .loyalty-progress-bar { margin-top: 16px; height: 6px; }
+  }
+
+  .stamp-section {
+    padding: 22px 20px 24px;
+    flex: 1;
+  }
+  .stamp-section-title {
+    font-size: 11px;
+    font-weight: 500;
+    color: #9B8A75;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .stamp-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  @media (min-width: 600px) {
+    .stamp-section { padding: 28px 28px 32px; }
+    .stamp-grid { gap: 14px; }
+    .stamp-section-title { font-size: 12px; margin-bottom: 18px; }
+  }
+  .stamp {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    border: 2.5px solid #DDD0BB;
+    background: var(--stamp-empty);
+    transition: all .3s cubic-bezier(.4,0,.2,1);
+    position: relative;
+    overflow: hidden;
+  }
+  @media (min-width: 600px) {
+    .stamp { font-size: 26px; border-width: 3px; }
+  }
+  @media (min-width: 900px) {
+    .stamp { font-size: 32px; }
+  }
+  .stamp.filled {
+    background: var(--stamp-fill);
+    border-color: var(--stamp-fill);
+    box-shadow: 0 2px 10px rgba(92,51,23,0.35);
+  }
+  .stamp.filled::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.18), transparent 60%);
+    border-radius: 50%;
+  }
+  .stamp.new-stamp {
+    animation: stampIn .5s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes stampIn {
+    from { transform: scale(0) rotate(-15deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0deg);  opacity: 1; }
+  }
+  .stamp-10 {
+    border: 2.5px dashed var(--gold);
+    background: linear-gradient(135deg, #FFF8E8, #F5EFE0);
+    font-size: 18px;
+  }
+  .stamp-10.reward {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border-color: transparent;
+    box-shadow: 0 4px 16px rgba(201,151,58,0.5);
+    animation: glowPulse 2s ease-in-out infinite;
+  }
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 4px 16px rgba(201,151,58,0.5); }
+    50%       { box-shadow: 0 4px 28px rgba(201,151,58,0.85); }
+  }
+
+  .loyalty-footer {
+    border-top: 1px solid #EAE0D0;
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #B0A090;
+  }
+  /* Footer sits below the stamp section on side-by-side layout */
+  @media (min-width: 700px) {
+    .loyalty-footer {
+      grid-column: 1 / -1;
+      font-size: 13px;
+      padding: 16px 28px;
+    }
+  }
+  .loyalty-footer span { font-weight: 500; color: var(--warm-mid); }
+
+  /* ── SCAN PROMPT ── */
+  .scan-prompt {
+    margin: 18px auto 0;
+    width: 100%;
+    background: rgba(201,151,58,0.12);
+    border: 1.5px solid rgba(201,151,58,0.3);
+    border-radius: 14px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .scan-icon { font-size: 28px; flex-shrink: 0; }
+  .scan-text { font-size: 13px; color: var(--gold-light); line-height: 1.4; }
+  .scan-text strong { display: block; font-size: 14px; margin-bottom: 2px; }
+  @media (min-width: 600px) {
+    .scan-prompt { padding: 20px 24px; border-radius: 16px; }
+    .scan-icon   { font-size: 34px; }
+    .scan-text   { font-size: 15px; }
+    .scan-text strong { font-size: 16px; }
+  }
+
+  /* ── SUCCESS SCREEN ── */
+  .success-icon {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, var(--brown), var(--gold));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 32px rgba(201,151,58,0.4);
+    animation: popIn .5s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .success-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--gold);
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .success-body {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 28px;
+    padding: 0 8px;
+  }
+
+  /* ── STAMP CLAIMED ── */
+  .claimed-screen {
+    padding: 40px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .claimed-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    animation: stampIn .6s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .claimed-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .claimed-sub { font-size: 14px; color: rgba(255,255,255,0.55); line-height: 1.5; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #1A1008;
+    border: 1px solid var(--gold);
+    color: var(--gold-light);
+    padding: 12px 22px;
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: transform .3s cubic-bezier(.4,0,.2,1);
+    z-index: 999;
+    white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── ERROR ── */
+  .error-msg {
+    font-size: 12.5px;
+    color: #C0392B;
+    margin-top: 6px;
+    display: none;
+  }
+  .error-msg.visible { display: block; }
+
+  /* ── SCAN INPUT (hidden QR code entry) ── */
+  .scan-code-wrap {
+    position: relative;
+  }
+  .scan-code-wrap input { padding-right: 44px; }
+  .scan-toggle {
+    position: absolute;
+    right: 12px; top: 50%;
+    transform: translateY(-50%);
+    background: none; border: none;
+    font-size: 18px; cursor: pointer;
+    color: var(--warm-mid);
+  }
+
+  .mt-12 { margin-top: 12px; }
+  .mt-20 { margin-top: 20px; }
+  .text-center { text-align: center; }
+  .w-full { width: 100%; }
+
+  /* ── FREE DRINK BANNER ── */
+  .free-drink-banner {
+    display: none;
+    margin: 14px auto 0;
+    width: 100%;
+    background: linear-gradient(135deg, #5C3317, #C9973A);
+    border-radius: 16px;
+    padding: 18px 20px;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 8px 32px rgba(201,151,58,0.35);
+    animation: fadeUp .4s ease both;
+  }
+  .free-drink-banner.visible { display: flex; }
+  .free-drink-banner-icon { font-size: 36px; flex-shrink: 0; }
+  .free-drink-banner-text { flex: 1; }
+  .free-drink-banner-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 3px;
+  }
+  .free-drink-banner-sub { font-size: 12px; color: rgba(255,255,255,0.75); line-height: 1.4; }
+  .free-drink-banner-btn {
+    background: #fff;
+    color: var(--brown);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: transform .15s;
+  }
+  .free-drink-banner-btn:active { transform: scale(0.96); }
+
+  /* ── FREE DRINK VOUCHER SCREEN ── */
+  #screen-voucher {
+    background: linear-gradient(160deg, #2A0F00 0%, #1A1008 100%);
+    min-height: 100vh;
+  }
+  .voucher-card {
+    margin: 0 16px;
+    width: calc(100% - 32px);
+    background: var(--cream);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,151,58,0.3);
+  }
+  .voucher-top {
+    background: linear-gradient(135deg, #5C3317 0%, #3D1F0A 100%);
+    padding: 30px 24px 24px;
+    text-align: center;
+    position: relative;
+  }
+  .voucher-top::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; right: 0;
+    height: 20px;
+    background: var(--cream);
+    border-radius: 20px 20px 0 0;
+  }
+  .voucher-gift-icon {
+    font-size: 56px;
+    display: block;
+    margin-bottom: 10px;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+  }
+  .voucher-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px;
+    font-weight: 900;
+    color: var(--gold-light);
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+  .voucher-subline {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 0.05em;
+  }
+  .voucher-body {
+    padding: 28px 24px 24px;
+    text-align: center;
+  }
+  .voucher-name-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--warm-mid);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .voucher-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--brown);
+    margin-bottom: 18px;
+  }
+  .voucher-divider {
+    border: none;
+    border-top: 2px dashed #DDD0BB;
+    margin: 0 0 18px;
+  }
+  .voucher-instruction {
+    font-size: 14px;
+    color: var(--warm-mid);
+    line-height: 1.6;
+    margin-bottom: 18px;
+  }
+  .voucher-email-chip {
+    display: inline-block;
+    background: #F0E8D8;
+    border: 1px solid #DDD0BB;
+    border-radius: 99px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: var(--brown);
+    font-weight: 500;
+    word-break: break-all;
+    margin-bottom: 20px;
+  }
+  .voucher-count-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, var(--brown), var(--gold));
+    color: #fff;
+    border-radius: 99px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+  .voucher-footer-note {
+    font-size: 11px;
+    color: #B0A090;
+    line-height: 1.5;
+    margin-top: 4px;
+  }
+  .voucher-back-btn {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid #DDD0BB;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--warm-mid);
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+
+  /* ── QR SCANNER OVERLAY ── */
+  #qr-overlay {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    transition: opacity .2s;
+  }
+  #qr-overlay.open {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  #qr-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .qr-ui {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .qr-viewfinder {
+    width: 240px;
+    height: 240px;
+    position: relative;
+  }
+  /* Four corner brackets */
+  .qr-viewfinder::before,
+  .qr-viewfinder::after,
+  .qr-corner-br,
+  .qr-corner-bl {
+    content: '';
+    position: absolute;
+    width: 36px; height: 36px;
+    border-color: var(--gold);
+    border-style: solid;
+  }
+  .qr-viewfinder::before { top: 0; left: 0;  border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+  .qr-viewfinder::after  { top: 0; right: 0; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+  .qr-corner-br { bottom: 0; right: 0; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+  .qr-corner-bl { bottom: 0; left: 0;  border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+
+  /* Scanning line animation */
+  .qr-scan-line {
+    position: absolute;
+    left: 4px; right: 4px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    top: 0;
+    animation: scanLine 2s ease-in-out infinite;
+    border-radius: 1px;
+    box-shadow: 0 0 8px rgba(201,151,58,0.7);
+  }
+  @keyframes scanLine {
+    0%   { top: 4px;   opacity: 1; }
+    50%  { top: calc(100% - 6px); opacity: 1; }
+    100% { top: 4px;   opacity: 1; }
+  }
+
+  /* Dimmed corners around viewfinder */
+  .qr-dim-top, .qr-dim-bottom, .qr-dim-left, .qr-dim-right {
+    position: absolute;
+    background: rgba(0,0,0,0.55);
+  }
+  .qr-dim-top    { top: 0; left: 0; right: 0; height: calc(50% - 120px); }
+  .qr-dim-bottom { bottom: 0; left: 0; right: 0; height: calc(50% - 120px); }
+  .qr-dim-left   { top: calc(50% - 120px); left: 0; width: calc(50% - 120px); height: 240px; }
+  .qr-dim-right  { top: calc(50% - 120px); right: 0; width: calc(50% - 120px); height: 240px; }
+
+  .qr-hint {
+    position: absolute;
+    bottom: calc(50% - 160px);
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    text-align: center;
+    letter-spacing: 0.03em;
+    pointer-events: none;
+  }
+
+  .qr-close-btn {
+    position: absolute;
+    top: env(safe-area-inset-top, 16px);
+    right: 16px;
+    margin-top: 16px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    padding: 8px 16px;
+    border-radius: 99px;
+    cursor: pointer;
+    pointer-events: all;
+    backdrop-filter: blur(6px);
+  }
+
+  .qr-status {
+    position: absolute;
+    bottom: calc(50% - 200px);
+    font-size: 12px;
+    color: var(--gold-light);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    pointer-events: none;
+  }
+  .qr-status-dot {
+    width: 7px; height: 7px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: blink 1.2s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.2;} }
+
+  .qr-success-flash {
+    position: absolute;
+    inset: 0;
+    background: rgba(201,151,58,0.25);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s;
+  }
+  .qr-success-flash.flash { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCREEN 1: LANDING / CHOOSE PATH          -->
+<!-- ══════════════════════════════════════════ -->
+<div class="screen active" id="screen-landing">
+  <div class="brand-header">
+    <div class="brand-logo">
+      <div class="brand-icon">☕</div>
+      <div class="brand-name">The Daily Grind</div>
+      <div class="brand-sub">Falcons Gymnastics Academy</div>
+    </div>
+    <div class="brand-tag">Loyalty Rewards</div>
+  </div>
+  <div class="content-wrap">
+    <div class="card">
+      <div class="card-title">Your loyalty card</div>
+      <div class="card-sub">Buy 9 hot drinks and your 10th is on us. Simple as that.</div>
+      <button class="btn btn-primary" onclick="show('screen-signup')">Create an account</button>
+      <div class="divider">already a member?</div>
+      <button class="btn btn-secondary" onclick="show('screen-signin')">Sign in</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCREEN 2: SIGN UP                        -->
+<!-- ══════════════════════════════════════════ -->
+<div class="screen" id="screen-signup">
+  <div class="brand-header">
+    <div class="brand-logo">
+      <div class="brand-icon">☕</div>
+      <div class="brand-name">The Daily Grind</div>
+    </div>
+  </div>
+  <div class="content-wrap">
+    <div class="card">
+      <div class="card-title">Create your card</div>
+      <div class="card-sub">A few quick details and you're ready to earn stamps.</div>
+      <div class="form-group">
+        <label>First Name</label>
+        <input type="text" id="signup-first" placeholder="e.g. Alex" autocomplete="given-name">
+      </div>
+      <div class="form-group">
+        <label>Last Name</label>
+        <input type="text" id="signup-last" placeholder="e.g. Smith" autocomplete="family-name">
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="signup-email" placeholder="you@example.com" autocomplete="email">
+        <div class="error-msg" id="signup-error">Please check your details and try again.</div>
+      </div>
+      <button class="btn btn-primary mt-20" onclick="doSignup()">Create my loyalty card →</button>
+      <button class="btn btn-secondary" onclick="show('screen-landing')">← Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCREEN 3: SIGN IN                        -->
+<!-- ══════════════════════════════════════════ -->
+<div class="screen" id="screen-signin">
+  <div class="brand-header">
+    <div class="brand-logo">
+      <div class="brand-icon">☕</div>
+      <div class="brand-name">The Daily Grind</div>
+    </div>
+  </div>
+  <div class="content-wrap">
+    <div class="card">
+      <div class="card-title">Welcome back ☕</div>
+      <div class="card-sub">Enter your email to open your loyalty card.</div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="signin-email" placeholder="you@example.com" autocomplete="email">
+        <div class="error-msg" id="signin-error">We couldn't find that email. Check the spelling or create an account.</div>
+      </div>
+      <button class="btn btn-primary mt-20" onclick="doSignin()">Open my card →</button>
+      <button class="btn btn-secondary" onclick="show('screen-landing')">← Use a different email</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCREEN 4: REGISTRATION SUCCESS           -->
+<!-- ══════════════════════════════════════════ -->
+<div class="screen" id="screen-reg-success">
+  <div class="brand-header" style="padding-bottom:0;">
+    <div class="brand-logo">
+      <div class="brand-icon">☕</div>
+      <div class="brand-name">The Daily Grind</div>
+    </div>
+  </div>
+  <div class="content-wrap">
+    <div class="card mt-20" style="text-align:center; margin-top:24px;">
+      <div class="success-icon">🎉</div>
+      <div class="success-title">You're all set!</div>
+      <div class="success-body">
+        Your loyalty card has been created.<br>
+        Earn a stamp with every hot drink – the 10th is on us!
+      </div>
+      <div style="background:#F0E8D8; border-radius:12px; padding:14px; margin-bottom:20px; font-size:13px; color:var(--warm-mid); line-height:1.5;">
+        <strong style="display:block; margin-bottom:4px; color:var(--brown);">How it works</strong>
+        When you buy a drink, staff will show you a QR code (or 6-digit code). Scan or enter it here to claim your stamp.
+      </div>
+      <button class="btn btn-primary" onclick="openLoyaltyCard()">View my loyalty card →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCREEN 5: LOYALTY CARD                   -->
+<!-- ══════════════════════════════════════════ -->
+<div class="screen" id="screen-card">
+  <div class="brand-header" style="padding-bottom: 14px;">
+    <div class="brand-logo">
+      <div class="brand-icon">☕</div>
+      <div class="brand-name">The Daily Grind</div>
+      <div class="brand-sub">Falcons Gymnastics Academy</div>
+    </div>
+  </div>
+  <div class="content-wrap">
+    <div class="loyalty-card-inner">
+      <div class="loyalty-top">
+        <div class="loyalty-greeting">Your loyalty card</div>
+        <div class="loyalty-name" id="card-name">Welcome</div>
+        <div class="loyalty-count-row">
+          <div class="loyalty-count-big" id="card-count">0</div>
+          <div class="loyalty-count-label">of 9 stamps collected</div>
+        </div>
+        <div class="loyalty-progress-bar">
+          <div class="loyalty-progress-fill" id="card-progress" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="stamp-section">
+        <div class="stamp-section-title">Stamp progress</div>
+        <div class="stamp-grid" id="stamp-grid">
+          <!-- stamps injected by JS -->
+        </div>
+      </div>
+
+      <div class="loyalty-footer">
+        <div>Next free drink: <span id="footer-remaining">9 stamps away</span></div>
+        <div id="footer-email" style="font-size:11px; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
+      </div>
+    </div>
+
+    <div class="scan-prompt">
+      <div class="scan-icon">📲</div>
+      <div class="scan-text">
+        <strong>Claim a stamp</strong>
+        Ask staff to show the purchase QR code, then scan or enter the code below.
+      </div>
+    </div>
+
+  <!-- FREE DRINK BANNER — shown when freeEarned > 0 -->
+  <div class="free-drink-banner" id="free-drink-banner">
+    <div class="free-drink-banner-icon">🎁</div>
+    <div class="free-drink-banner-text">
+      <div class="free-drink-banner-title">Free drink ready!</div>
+      <div class="free-drink-banner-sub">Show your voucher to a member of staff.</div>
+    </div>
+    <button class="free-drink-banner-btn" onclick="show('screen-voucher')">Show voucher</button>
+  </div>
+
+  <div class="card mt-12" style="padding:18px 20px;">
+    <label>Claim your stamp</label>
+
+    <!-- Primary: scan button -->
+    <button class="btn btn-primary" onclick="openScanner()" style="display:flex; align-items:center; justify-content:center; gap:10px;">
+      <span style="font-size:20px;">📷</span>
+      <span>Scan QR code from staff</span>
+    </button>
+
+    <!-- Divider -->
+    <div style="display:flex; align-items:center; gap:10px; margin:14px 0;">
+      <div style="flex:1; height:1px; background:#DDD0BB;"></div>
+      <div style="font-size:12px; color:#B0A090;">or enter code manually</div>
+      <div style="flex:1; height:1px; background:#DDD0BB;"></div>
+    </div>
+
+    <!-- Manual code entry -->
+    <div class="scan-code-wrap">
+      <input type="text" id="stamp-code-input" placeholder="e.g. AB12CD" maxlength="6"
+             style="text-transform:uppercase; letter-spacing:0.15em; font-weight:500; text-align:center; font-size:18px;">
+    </div>
+    <div class="error-msg" id="stamp-error">This code is invalid or has expired. Ask staff for a new one.</div>
+    <button class="btn btn-secondary mt-12" onclick="claimStamp()">Submit code</button>
+    <button class="btn btn-secondary" onclick="signOut()" style="margin-top:8px;">← Sign out</button>
+  </div>
+  </div><!-- end content-wrap -->
+</div><!-- end screen-card -->
+
+<!-- ══════════════════════════════════════════ -->
+<!-- QR SCANNER OVERLAY                       -->
+<!-- ══════════════════════════════════════════ -->
+<div id="qr-overlay">
+  <video id="qr-video" autoplay playsinline muted></video>
+  <canvas id="qr-canvas-hidden" style="display:none;"></canvas>
+
+  <!-- Dimmed areas around viewfinder -->
+  <div class="qr-dim-top"></div>
+  <div class="qr-dim-bottom"></div>
+  <div class="qr-dim-left"></div>
+  <div class="qr-dim-right"></div>
+
+  <!-- Viewfinder UI -->
+  <div class="qr-ui">
+    <div class="qr-viewfinder">
+      <div class="qr-corner-br"></div>
+      <div class="qr-corner-bl"></div>
+      <div class="qr-scan-line"></div>
+    </div>
+    <div class="qr-hint">Point at the QR code shown by staff</div>
+    <div class="qr-status">
+      <div class="qr-status-dot"></div>
+      Camera active
+    </div>
+  </div>
+
+  <div class="qr-success-flash" id="qr-flash"></div>
+  <button class="qr-close-btn" onclick="closeScanner()">✕ Cancel</button>
+</div>
+
+<!-- Hidden input for iOS camera fallback -->
+<input type="file" id="qr-file-input" accept="image/*" capture="environment"
+       style="display:none;" onchange="handleCapturedImage(this)">
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCREEN 6: STAMP CLAIMED SUCCESS          -->
+<!-- ══════════════════════════════════════════ -->
+<div class="screen" id="screen-stamp-claimed">
+  <div class="brand-header">
+    <div class="brand-logo">
+      <div class="brand-icon">☕</div>
+      <div class="brand-name">The Daily Grind</div>
+    </div>
+  </div>
+  <div class="content-wrap">
+    <div class="card claimed-screen">
+      <div class="claimed-icon" id="claimed-icon">☕</div>
+      <div class="claimed-title" id="claimed-title">Stamp added!</div>
+      <div class="claimed-sub" id="claimed-sub">Keep going – you're on your way to a free drink.</div>
+      <button class="btn btn-primary mt-20" onclick="show('screen-card')">View my card →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SCREEN 7: FREE DRINK VOUCHER             -->
+<!-- ══════════════════════════════════════════ -->
+<div class="screen" id="screen-voucher">
+  <div class="brand-header" style="padding-bottom: 16px;">
+    <div class="brand-logo">
+      <div class="brand-icon">☕</div>
+      <div class="brand-name">The Daily Grind</div>
+      <div class="brand-sub">Falcons Gymnastics Academy</div>
+    </div>
+  </div>
+  <div class="content-wrap">
+    <div class="voucher-card">
+      <div class="voucher-top">
+        <span class="voucher-gift-icon">🎁</span>
+        <div class="voucher-headline">Free Drink!</div>
+        <div class="voucher-subline">Loyalty reward — 9 stamps collected</div>
+      </div>
+      <div class="voucher-body">
+        <div class="voucher-name-label">Redeemed by</div>
+        <div class="voucher-name" id="voucher-name">—</div>
+        <hr class="voucher-divider">
+        <div class="voucher-instruction">
+          Show this screen to a member of staff.<br>
+          They will verify your account and make your free drink.
+        </div>
+        <div class="voucher-email-chip" id="voucher-email">—</div>
+        <div class="voucher-count-badge">
+          <span>🎁</span>
+          <span id="voucher-count">1 free drink available</span>
+        </div>
+        <div class="voucher-footer-note">
+          Staff: check the Customers tab in the staff app to verify this email,<br>
+          then mark the free drink as redeemed.
+        </div>
+      </div>
+    </div>
+    <button class="voucher-back-btn" style="margin-top:16px;" onclick="show('screen-card')">← Back to my card</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// CONFIGURATION — paste your Apps Script URL here
+// ═══════════════════════════════════════════════
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwa-DYq6SMeTKcpNe1tT94Qmw7mblGebexLMkguDpy5xUUzaxNzE0azlA_NWEY1-5riBw/exec';
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let currentUser = null; // { firstName, lastName, email, stamps }
+
+// ═══════════════════════════════════════════════
+// SCREEN NAVIGATION
+// ═══════════════════════════════════════════════
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  el.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ═══════════════════════════════════════════════
+// SIGN UP
+// ═══════════════════════════════════════════════
+async function doSignup() {
+  const first = document.getElementById('signup-first').value.trim();
+  const last  = document.getElementById('signup-last').value.trim();
+  const email = document.getElementById('signup-email').value.trim().toLowerCase();
+  const err   = document.getElementById('signup-error');
+  err.classList.remove('visible');
+
+  if (!first || !last || !email || !email.includes('@')) {
+    err.textContent = 'Please fill in all fields with a valid email.';
+    err.classList.add('visible'); return;
+  }
+
+  try {
+    const res = await callAPI('register', { firstName: first, lastName: last, email });
+    if (res.status === 'ok') {
+      currentUser = { firstName: first, lastName: last, email, stamps: 0 };
+      saveSession();
+      show('screen-reg-success');
+    } else if (res.status === 'exists') {
+      err.textContent = 'An account with this email already exists. Please sign in instead.';
+      err.classList.add('visible');
+    } else {
+      err.textContent = res.message || 'Something went wrong. Please try again.';
+      err.classList.add('visible');
+    }
+  } catch(e) {
+    err.textContent = 'Could not connect. Please check your connection and try again.';
+    err.classList.add('visible');
+  }
+}
+
+// ═══════════════════════════════════════════════
+// SIGN IN
+// ═══════════════════════════════════════════════
+async function doSignin() {
+  const email = document.getElementById('signin-email').value.trim().toLowerCase();
+  const err   = document.getElementById('signin-error');
+  err.classList.remove('visible');
+
+  if (!email || !email.includes('@')) {
+    err.textContent = 'Please enter a valid email address.';
+    err.classList.add('visible'); return;
+  }
+
+  try {
+    const res = await callAPI('lookup', { email });
+    if (res.status === 'ok') {
+      currentUser = { firstName: res.firstName, lastName: res.lastName, email, stamps: res.stamps };
+      saveSession();
+      renderCard();
+      show('screen-card');
+    } else {
+      err.classList.add('visible');
+    }
+  } catch(e) {
+    err.textContent = 'Could not connect. Please try again.';
+    err.classList.add('visible');
+  }
+}
+
+// ═══════════════════════════════════════════════
+// OPEN LOYALTY CARD (from reg success)
+// ═══════════════════════════════════════════════
+function openLoyaltyCard() {
+  renderCard();
+  show('screen-card');
+}
+
+// ═══════════════════════════════════════════════
+// RENDER LOYALTY CARD
+// ═══════════════════════════════════════════════
+function renderCard(newStamp = false) {
+  if (!currentUser) return;
+  const stamps = currentUser.stamps || 0;
+  const displayStamps = stamps % 9 === 0 && stamps > 0 ? 9 : stamps % 9;
+  const freeEarned = Math.floor(stamps / 9);
+
+  document.getElementById('card-name').textContent = currentUser.firstName;
+  document.getElementById('card-count').textContent = displayStamps;
+  document.getElementById('card-progress').style.width = (displayStamps / 9 * 100) + '%';
+  document.getElementById('footer-email').textContent = currentUser.email;
+
+  const remaining = 9 - displayStamps;
+  document.getElementById('footer-remaining').textContent =
+    displayStamps === 9 ? '🎉 Free drink ready!' :
+    remaining === 1 ? '1 stamp away' : `${remaining} stamps away`;
+
+  // Show/hide free drink banner
+  const banner = document.getElementById('free-drink-banner');
+  if (freeEarned > 0) {
+    banner.classList.add('visible');
+  } else {
+    banner.classList.remove('visible');
+  }
+
+  // Populate voucher screen
+  document.getElementById('voucher-name').textContent =
+    currentUser.firstName + ' ' + currentUser.lastName;
+  document.getElementById('voucher-email').textContent = currentUser.email;
+  document.getElementById('voucher-count').textContent =
+    freeEarned === 1 ? '1 free drink available' : `${freeEarned} free drinks available`;
+
+  // Build stamp grid
+  const grid = document.getElementById('stamp-grid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= 9; i++) {
+    const el = document.createElement('div');
+    el.className = 'stamp' + (i <= displayStamps ? ' filled' : '');
+    if (newStamp && i === displayStamps) el.classList.add('new-stamp');
+    el.textContent = i <= displayStamps ? '☕' : '';
+    grid.appendChild(el);
+  }
+  // 10th stamp (free drink)
+  const tenth = document.createElement('div');
+  tenth.className = 'stamp stamp-10' + (freeEarned > 0 ? ' reward' : '');
+  tenth.style.gridColumn = '1 / span 1';
+  tenth.textContent = freeEarned > 0 ? '🎁' : '🆓';
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'grid-column: 3; display:flex; flex-direction:column; align-items:center; gap:4px;';
+  wrapper.appendChild(tenth);
+  const lbl = document.createElement('div');
+  lbl.style.cssText = 'font-size:9px; color:#9B8A75; letter-spacing:0.08em; text-transform:uppercase;';
+  lbl.textContent = 'Free drink';
+  wrapper.appendChild(lbl);
+  grid.appendChild(wrapper);
+}
+
+// ═══════════════════════════════════════════════
+// CLAIM STAMP
+// ═══════════════════════════════════════════════
+async function claimStamp() {
+  const code = document.getElementById('stamp-code-input').value.trim().toUpperCase();
+  const err  = document.getElementById('stamp-error');
+  err.classList.remove('visible');
+
+  if (code.length < 4) {
+    err.textContent = 'Please enter the full code from staff.';
+    err.classList.add('visible'); return;
+  }
+
+  try {
+    const res = await callAPI('claimStamp', { email: currentUser.email, code });
+    if (res.status === 'ok') {
+      currentUser.stamps = res.newTotal;
+      saveSession();
+      document.getElementById('stamp-code-input').value = '';
+
+      const stamps = res.newTotal;
+      const displayStamps = stamps % 9 === 0 && stamps > 0 ? 9 : stamps % 9;
+
+      if (stamps % 9 === 0 && stamps > 0) {
+        // Free drink!
+        document.getElementById('claimed-icon').textContent = '🎁';
+        document.getElementById('claimed-title').textContent = 'Free drink earned!';
+        document.getElementById('claimed-sub').textContent = 'Show this screen to staff to claim your free drink. Well done!';
+      } else {
+        const remaining = 9 - displayStamps;
+        document.getElementById('claimed-icon').textContent = '☕';
+        document.getElementById('claimed-title').textContent = 'Stamp added!';
+        document.getElementById('claimed-sub').textContent =
+          remaining === 1 ? 'Just 1 more stamp until your free drink!' :
+          `${remaining} more stamps until your free drink. Keep it up!`;
+      }
+      renderCard(true);
+      show('screen-stamp-claimed');
+    } else if (res.status === 'expired') {
+      err.textContent = 'This code has expired. Ask staff for a new one.';
+      err.classList.add('visible');
+    } else if (res.status === 'used') {
+      err.textContent = 'This code has already been used.';
+      err.classList.add('visible');
+    } else {
+      err.textContent = 'Invalid code. Ask staff for a new one.';
+      err.classList.add('visible');
+    }
+  } catch(e) {
+    err.textContent = 'Could not connect. Please try again.';
+    err.classList.add('visible');
+  }
+}
+
+// ═══════════════════════════════════════════════
+// SIGN OUT
+// ═══════════════════════════════════════════════
+function signOut() {
+  currentUser = null;
+  sessionStorage.removeItem('dg_user');
+  document.getElementById('signin-email').value = '';
+  document.getElementById('signin-error').classList.remove('visible');
+  show('screen-landing');
+}
+
+// ═══════════════════════════════════════════════
+// SESSION PERSISTENCE (tab session only)
+// ═══════════════════════════════════════════════
+function saveSession() {
+  sessionStorage.setItem('dg_user', JSON.stringify(currentUser));
+}
+function loadSession() {
+  const s = sessionStorage.getItem('dg_user');
+  if (s) {
+    currentUser = JSON.parse(s);
+    renderCard();
+    show('screen-card');
+  }
+}
+
+// ═══════════════════════════════════════════════
+// API HELPER
+// ═══════════════════════════════════════════════
+async function callAPI(action, params = {}) {
+  const url = new URL(APPS_SCRIPT_URL);
+  url.searchParams.set('action', action);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  const resp = await fetch(url.toString(), { method: 'GET' });
+  if (!resp.ok) throw new Error('Network error');
+  return resp.json();
+}
+
+// ═══════════════════════════════════════════════
+// QR CODE PARAM — auto-fill code on load
+// ═══════════════════════════════════════════════
+function checkURLParams() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  if (code && currentUser) {
+    document.getElementById('stamp-code-input').value = code.toUpperCase();
+    show('screen-card');
+    // Auto-claim after brief delay so card renders
+    setTimeout(() => claimStamp(), 400);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+window.addEventListener('load', () => {
+  loadSession();
+  checkURLParams();
+});
+
+// Input formatting for code field
+document.getElementById('stamp-code-input')?.addEventListener('input', function() {
+  this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+});
+
+// ═══════════════════════════════════════════════
+// QR CAMERA SCANNER
+// Uses BarcodeDetector API (Android Chrome, desktop Chrome/Edge)
+// Falls back to file capture (iOS Safari)
+// ═══════════════════════════════════════════════
+let scannerStream  = null;
+let scannerTimer   = null;
+let scannerActive  = false;
+let barcodeDetector = null;
+
+// Initialise BarcodeDetector if available
+if (typeof BarcodeDetector !== 'undefined') {
+  BarcodeDetector.getSupportedFormats().then(formats => {
+    if (formats.includes('qr_code')) {
+      barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
+    }
+  }).catch(() => {});
+}
+
+async function openScanner() {
+  // Path 1: BarcodeDetector + getUserMedia (Android Chrome, desktop)
+  if (barcodeDetector && navigator.mediaDevices?.getUserMedia) {
+    await openLiveScanner();
+    return;
+  }
+
+  // Path 2: getUserMedia only, no BarcodeDetector — try anyway on desktop
+  if (navigator.mediaDevices?.getUserMedia && typeof BarcodeDetector !== 'undefined') {
+    await openLiveScanner();
+    return;
+  }
+
+  // Path 3: iOS Safari / any browser without BarcodeDetector
+  // Use file capture — triggers camera directly on mobile
+  const fileInput = document.getElementById('qr-file-input');
+  if (fileInput) {
+    fileInput.value = '';
+    fileInput.click();
+    return;
+  }
+
+  showToast('Camera not supported – enter code manually');
+}
+
+// ── LIVE VIDEO SCANNER (BarcodeDetector) ──────
+async function openLiveScanner() {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    // Fall back to file capture
+    document.getElementById('qr-file-input').click();
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: 'environment' },
+        width:  { ideal: 1280 },
+        height: { ideal: 720 }
+      }
+    });
+
+    scannerStream = stream;
+    const video = document.getElementById('qr-video');
+    video.srcObject = stream;
+
+    video.onloadedmetadata = () => {
+      video.play().then(() => {
+        scannerActive = true;
+        document.getElementById('qr-overlay').classList.add('open');
+        scannerTimer = setInterval(scanFrame, 300);
+      }).catch(() => {
+        stopStream();
+        // Fall back to file capture
+        document.getElementById('qr-file-input').click();
+      });
+    };
+
+  } catch(err) {
+    stopStream();
+    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+      showToast('Camera permission denied – enter code manually');
+    } else {
+      // Any other error — try file capture as last resort
+      document.getElementById('qr-file-input').click();
+    }
+  }
+}
+
+async function scanFrame() {
+  if (!scannerActive) return;
+
+  const video = document.getElementById('qr-video');
+  if (!video || video.paused || video.ended) return;
+  if (video.videoWidth === 0 || video.videoHeight === 0) return;
+
+  try {
+    if (barcodeDetector) {
+      // Fast native path
+      const barcodes = await barcodeDetector.detect(video);
+      if (barcodes.length > 0) {
+        onQRDetected(barcodes[0].rawValue);
+      }
+    } else {
+      // Canvas fallback for browsers with getUserMedia but no BarcodeDetector
+      const canvas = document.getElementById('qr-canvas-hidden');
+      canvas.width  = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0);
+      // Without jsQR we can't decode from canvas — prompt file capture instead
+      clearInterval(scannerTimer);
+      closeScanner();
+      document.getElementById('qr-file-input').click();
+    }
+  } catch(e) {
+    // Detector threw — keep trying
+  }
+}
+
+// ── FILE CAPTURE PATH (iOS Safari) ────────────
+async function handleCapturedImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  showToast('Reading QR code…');
+
+  // Try BarcodeDetector on the image blob (works on Android even via file input)
+  if (typeof BarcodeDetector !== 'undefined') {
+    try {
+      const detector = barcodeDetector || new BarcodeDetector({ formats: ['qr_code'] });
+      const img = await createImageBitmap(file);
+      const barcodes = await detector.detect(img);
+      if (barcodes.length > 0) {
+        onQRDetected(barcodes[0].rawValue);
+        return;
+      } else {
+        showToast('No QR code found – try again or enter code manually');
+        return;
+      }
+    } catch(e) {
+      // fall through to canvas attempt
+    }
+  }
+
+  // Last resort: draw to canvas and tell the user
+  // (iOS Safari has no BarcodeDetector and no jsQR — manual entry is the only option)
+  showToast('Could not read QR – please enter the code manually');
+}
+
+// ── SHARED HELPERS ────────────────────────────
+function closeScanner() {
+  scannerActive = false;
+  clearInterval(scannerTimer);
+  scannerTimer = null;
+  stopStream();
+  document.getElementById('qr-overlay').classList.remove('open');
+}
+
+function stopStream() {
+  if (scannerStream) {
+    scannerStream.getTracks().forEach(t => t.stop());
+    scannerStream = null;
+  }
+  const video = document.getElementById('qr-video');
+  if (video) video.srcObject = null;
+}
+
+function onQRDetected(rawValue) {
+  // Stop scanning immediately
+  scannerActive = false;
+  clearInterval(scannerTimer);
+  scannerTimer = null;
+
+  // Flash feedback
+  const flash = document.getElementById('qr-flash');
+  if (flash) { flash.classList.add('flash'); setTimeout(() => flash.classList.remove('flash'), 300); }
+
+  // Extract code from URL param or treat as bare code
+  let code = '';
+  try {
+    const url   = new URL(rawValue);
+    const param = url.searchParams.get('code');
+    if (param) code = param.toUpperCase().trim();
+  } catch(e) {
+    code = rawValue.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+  }
+
+  if (!code || code.length < 4) {
+    // Not a stamp QR — resume scanning
+    scannerActive = true;
+    scannerTimer  = setInterval(scanFrame, 300);
+    return;
+  }
+
+  setTimeout(() => {
+    closeScanner();
+    document.getElementById('stamp-code-input').value = code;
+    document.getElementById('stamp-error').classList.remove('visible');
+    showToast('QR scanned ✓');
+    setTimeout(() => claimStamp(), 300);
+  }, 300);
+}
+
+</script>
+</body>
+</html>
